@@ -100,14 +100,30 @@ created by older versions of `keynote-parser`:
 
 As `keynote-parser` includes Protobuf definitions extracted from a copy of Keynote,
 new versions of Keynote will inevitably create `.key` files that cannot be read by `keynote-parser`.
-As new versions of Keynote are released, updates to `keynote-parser` can be made automatically
-by running the following on a macOS machine with Keynote installed:
+When a new version of Keynote is installed, run the following on that macOS machine to regenerate
+the mappings and compiled Protobuf files:
 
 ```shell
-cd dumper
-make clean
-make
+PYTHONPATH=$PYTHONPATH:$(pwd) uv run --python /opt/homebrew/bin/python3 dumper/run.py --app-path "/Applications/Keynote.app"
 ```
+
+**Prerequisites:**
+- macOS with Keynote installed
+- [Homebrew](https://brew.sh) Python 3.13: `brew install python@3.13`
+- [LLVM/LLDB](https://llvm.org) matching that Python version: `brew install llvm`
+- `protoc`: `brew install protobuf`
+
+**Notes:**
+- The app path may differ depending on the Keynote version installed
+  (e.g. `/Applications/Keynote 2025.app`). Check your `/Applications` folder.
+- `uv run --python /opt/homebrew/bin/python3` is required because the LLDB Python bindings
+  must match the Homebrew Python that LLDB was compiled against. Using `uv`'s bundled Python
+  will cause a silent crash.
+- The script will briefly launch Keynote under the debugger to extract the type registry.
+  Keynote may appear on screen momentarily — this is expected.
+- No codesigning certificate is required; the script uses ad-hoc signing (`-`) automatically.
+- The generated files (`keynote_parser/versions/v*/generated/`) are not committed to the
+  repository and must be regenerated locally after cloning.
 
 ## Troubleshooting
 
