@@ -711,10 +711,15 @@ TSPRegistryMapping = {
 
 def compute_maps():
     name_class_map = {}
+
+    def register(message_type):
+        name_class_map[message_type.DESCRIPTOR.full_name] = message_type
+        for nested_name in message_type.DESCRIPTOR.nested_types_by_name:
+            register(getattr(message_type, nested_name))
+
     for file in PROTO_FILES:
         for message_name in file.DESCRIPTOR.message_types_by_name:
-            message_type = getattr(file, message_name)
-            name_class_map[message_type.DESCRIPTOR.full_name] = message_type
+            register(getattr(file, message_name))
 
     id_name_map = {}
     for k, v in list(TSPRegistryMapping.items()):
